@@ -23,6 +23,8 @@ index.html ln 31 added user.bio to the <p> tag to show users bio
 index.html ln 22 removed extra > after form, preventing the action of the form from being coded correctly
 
 Step Five: 
+updated route /users/
+created a new UserEditForm
 
 
 

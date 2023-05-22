@@ -110,6 +110,16 @@ class User(db.Model):
         found_user_list = [user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
+    def num_following(self):
+        return len(self.following)
+
+    def following_messages(self):
+        msgs = []
+        for user in self.following:
+            for message in user.messages:
+                msgs.append(message)
+        return msgs
+
     @classmethod
     def signup(cls, username, email, password, image_url):
         """Sign up user.
@@ -188,3 +198,4 @@ def connect_db(app):
 
     db.app = app
     db.init_app(app)
+

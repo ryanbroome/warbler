@@ -54,10 +54,12 @@
 <div class="row">
   <div class="col-sm-3">
     <h4 id="sidebar-username">@{{ user.username }}</h4>
-    <!-- * START -->
     <p>{{user.bio}}</p>
-    <p class="user-location"><span class="fa fa-map-marker"></span>{{user.location}} | LOCATION HERE</p>
-    <!-- * END -->
+    <p class="user-location"><span class="fa fa-map-marker"></span> {% if my_city %} {{my_city.city}}</p>
+    {% else %} 
+  </p>
+    {% endif %}
+
   </div>
 
   {% block user_details %} {% endblock %}

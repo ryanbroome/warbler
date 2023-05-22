@@ -1,5 +1,9 @@
 import os
+
 import requests
+import geocoder
+
+
 from secrets_1 import SECRET, API_KEY
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
@@ -147,6 +151,10 @@ def users_show(user_id):
     """Show user profile."""
 
     user = User.query.get_or_404(user_id)
+    
+    #* Location feature pulled using geocoder module
+    my_city = geocoder.ip('me')
+
 
     # snagging messages in order from the database;
     # user.messages won't be in order by default
@@ -156,7 +164,7 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages)
+    return render_template('users/show.html', user=user, messages=messages, my_city=my_city)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -340,13 +348,24 @@ def homepage():
     """
 
     if g.user:
+        # ?START 
+        # msgs = User.following_messages(g.user)
+        msgs = []
+        for message in g.user.messages:
+            msgs.append(message)
+        for user in g.user.following:
+            for message in user.messages:
+                msgs.append(message)
+
+        # ! END
+
         messages = (Message
                     .query
                     .order_by(Message.timestamp.desc())
                     .limit(100)
-                    .all())
+                    )
 
-        return render_template('home.html', messages=messages)
+        return render_template('home.html', messages=messages, msgs=msgs, f=g.user.following)
 
     else:
         return render_template('home-anon.html')
