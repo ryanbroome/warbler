@@ -1,0 +1,28 @@
+Setup
+Completed per instruction 
+
+Part One: Fix Current Features
+Step One: Understand the Model
+follows table has two foreign keys, these reference the user being followed and the user following. The two foreign keys ensure that both the user doing the following and the user being followed both currently exist in the Users table. 
+
+bug fixes
+
+Step Two:
+fix logout route
+flash username has been logged out
+
+Step Three:
+update location
+update bio
+update header image, TODO update sizing / positioning class name perhaps?
+
+Step Four:
+followers ln 28 added user.bio to the <p> tag to show users bio
+following ln 27 added user.bio to the <p> tag to show users bio
+index.html ln 31 added user.bio to the <p> tag to show users bio
+index.html ln 22 removed extra > after form, preventing the action of the form from being coded correctly
+
+Step Five: 
+
+
+

@@ -1,10 +1,11 @@
 import os
-from secrets_1 import SECRET
+import requests
+from secrets_1 import SECRET, API_KEY
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, UserEditForm
 from models import db, connect_db, User, Message
 
 CURR_USER_KEY = "curr_user"
@@ -18,9 +19,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', SECRET)
+
 toolbar = DebugToolbarExtension(app)
+
+API_BASE_URL = "http://www.mapquestapi.com/geocoding/v1"
 
 connect_db(app)
 
@@ -112,9 +116,11 @@ def login():
 @app.route('/logout')
 def logout():
     """Handle logout of user."""
-
-    # IMPLEMENT THIS
-
+    # *START
+    flash(f'User {g.user.username} logged out', 'success')
+    do_logout()
+    return redirect('/login')
+    # *END
 
 ##############################################################################
 # General user routes:
@@ -207,11 +213,53 @@ def stop_following(follow_id):
     return redirect(f"/users/{g.user.id}/following")
 
 
-@app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+@app.route('/users/profile', methods=["GET"])
+def profile_get():
     """Update profile for current user."""
+    
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = g.user
+    form = UserEditForm(obj=user)
+    return render_template('users/edit.html', form=form, user=user)
 
-    # IMPLEMENT THIS
+# * START POST REQUEST VIEW FUNCTION
+@app.route('/users/profile', methods=["POST"])
+def profile_post():
+    """Update profile for current user."""
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+    
+    user = User.query.get_or_404(g.user.id)
+    form = UserEditForm()    
+
+    # TODO handle error when password not input correctly or at all
+    if form.validate_on_submit():
+        username = form.username.data
+        email = form.email.data
+        image_url = form.image_url.data
+        header_image_url = form.header_image_url.data
+        bio = form.bio.data
+        
+        user.username = username
+        user.email = email
+        user.image_url = image_url
+        user.header_image_url = header_image_url
+        user.bio = bio
+
+        db.session.commit()
+
+        flash('user successfully updated', 'success')
+        return redirect(f'users/{user.id}')
+
+    else: 
+        flash('unable to update, change template to login? redirect?', 'danger')
+        return render_template('users/detail.html', user=user)
+                                                    # users/detail.html
+    # * END POST REQUEST VIEW FUNCTION
 
 
 @app.route('/users/delete', methods=["POST"])
