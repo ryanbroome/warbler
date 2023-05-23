@@ -36,7 +36,7 @@
 
   <div class="col-lg-6 col-md-8 col-sm-12">
     <ul class="list-group" id="messages">
-      {% for msg in msgs %}
+      {% for msg in ms %}
       <li class="list-group-item">
         <a href="/messages/{{ msg.id  }}" class="message-link" />
         <a href="/users/{{ msg.user.id }}">
@@ -61,5 +61,6 @@
     </ul>
   </div>
 </div>
-
-{% endblock %}
+{% if ms %}
+<p>{{ms}}</p>
+{% else %} {% endif %} {% endblock %}
