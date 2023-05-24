@@ -166,7 +166,9 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
+    
     likes = [message.id for message in user.likes]
+    
     return render_template('users/show.html', user=user, messages=messages, my_city=my_city, likes=likes)
 
 
@@ -270,7 +272,6 @@ def add_like(message_id):
         return redirect('/')
     
     liked_message = Message.query.get_or_404(message_id)
-
     if liked_message.user_id == g.user.id:
         return abort(403)
     
