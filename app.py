@@ -348,39 +348,20 @@ def homepage():
     """
 
     if g.user:
-    
-        # ?START  user messages and user following messages with no sort 
-        msgs = []
-        for message in g.user.messages:
-            msgs.append(message)
-
-        for followed_user in g.user.following:
-            for message in followed_user.messages:
-                msgs.append(message)
-        while (len(msgs) > 100):
-            msgs.pop()
-        # ! END
-        #// ids = [u.id for u in g.user.following]
-        
         # messages, user and following users only using queries
-        ms = (Message
+        msgs = (Message
               .query
               .filter(Message.user_id.in_([u.id for u in g.user.following]))
               .order_by(Message.timestamp.desc())
-              .limit(100).all()
+            #?.join(Message.user_id == g.user.id)
+              .limit(100)
+              .all()
               )
-        # this adds user messages, but is not as clean
+        #? this adds user messages, but is not as clean
         for message in g.user.messages:
-            ms.append(message)
-            # !END get user.messages and user.following.messages
-        # original messages
-        messages = (Message
-                    .query
-                    .order_by(Message.timestamp.desc())
-                    .limit(100)
-                    )
+            msgs.append(message)
 
-        return render_template('home.html', messages=messages, msgs=msgs, ms=ms)
+        return render_template('home.html', msgs=msgs)
 
     else:
         return render_template('home-anon.html')
