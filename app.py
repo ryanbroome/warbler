@@ -3,7 +3,6 @@ import os
 import requests
 import geocoder
 
-
 from secrets_1 import SECRET, API_KEY
 from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
@@ -176,7 +175,8 @@ def show_following(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/following.html', user=user)
+    my_city = geocoder.ip('me')
+    return render_template('users/following.html', user=user, my_city=my_city)
 
 
 @app.route('/users/<int:user_id>/followers')
@@ -188,7 +188,8 @@ def users_followers(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/followers.html', user=user)
+    my_city = geocoder.ip('me')
+    return render_template('users/followers.html', user=user, my_city=my_city)
 
 
 @app.route('/users/follow/<int:follow_id>', methods=['POST'])
@@ -231,9 +232,10 @@ def profile_get():
     
     user = g.user
     form = UserEditForm(obj=user)
+
     return render_template('users/edit.html', form=form, user=user)
 
-# * START POST REQUEST VIEW FUNCTION
+
 @app.route('/users/profile', methods=["POST"])
 def profile_post():
     """Update profile for current user."""
@@ -241,31 +243,20 @@ def profile_post():
         flash("Access unauthorized.", "danger")
         return redirect("/")
     
-    user = User.query.get_or_404(g.user.id)
-    form = UserEditForm()    
+    form = UserEditForm(obj=g.user)
 
     # TODO handle error when password not input correctly or at all
     if form.validate_on_submit():
-        username = form.username.data
-        email = form.email.data
-        image_url = form.image_url.data
-        header_image_url = form.header_image_url.data
-        bio = form.bio.data
-        
-        user.username = username
-        user.email = email
-        user.image_url = image_url
-        user.header_image_url = header_image_url
-        user.bio = bio
+        form.populate_obj(g.user)
 
         db.session.commit()
 
         flash('user successfully updated', 'success')
-        return redirect(f'users/{user.id}')
+        return redirect(f'users/{g.user.id}')
 
     else: 
         flash('unable to update, change template to login? redirect?', 'danger')
-        return render_template('users/detail.html', user=user)
+        return render_template('users/detail.html', user=g.user)
                                                     # users/detail.html
     # * END POST REQUEST VIEW FUNCTION
 
