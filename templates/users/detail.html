@@ -55,7 +55,7 @@
   <div class="col-sm-3">
     <h4 id="sidebar-username">@{{ user.username }}</h4>
     <p>{{user.bio}}</p>
-    <p class="user-location"><span class="fa fa-map-marker"></span> {% if my_city %} {{my_city.city}}</p>
+    <p class="user-location"><span class="fa fa-map-marker"></span> {% if my_city %} Currently: {{my_city.city}}</p>
     {% else %} 
   </p>
     {% endif %}

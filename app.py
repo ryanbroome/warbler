@@ -71,7 +71,10 @@ def signup():
     If the there already is a user with that username: flash message
     and re-present form.
     """
-
+    # //
+    if CURR_USER_KEY in session:
+        del session[CURR_USER_KEY]
+        # //
     form = UserAddForm()
 
     if form.validate_on_submit():
@@ -163,7 +166,8 @@ def users_show(user_id):
                 .order_by(Message.timestamp.desc())
                 .limit(100)
                 .all())
-    return render_template('users/show.html', user=user, messages=messages, my_city=my_city)
+    likes = [message.id for message in user.likes]
+    return render_template('users/show.html', user=user, messages=messages, my_city=my_city, likes=likes)
 
 
 @app.route('/users/<int:user_id>/following')
@@ -221,44 +225,31 @@ def stop_following(follow_id):
 
     return redirect(f"/users/{g.user.id}/following")
 
-
-@app.route('/users/profile', methods=["GET"])
-def profile_get():
+@app.route('/users/profile', methods=["GET", "POST"])
+def edit_profile():
     """Update profile for current user."""
-    
+
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-    
+
     user = g.user
     form = UserEditForm(obj=user)
 
-    return render_template('users/edit.html', form=form, user=user)
-
-
-@app.route('/users/profile', methods=["POST"])
-def profile_post():
-    """Update profile for current user."""
-    if not g.user:
-        flash("Access unauthorized.", "danger")
-        return redirect("/")
-    
-    form = UserEditForm(obj=g.user)
-
-    # TODO handle error when password not input correctly or at all
     if form.validate_on_submit():
-        form.populate_obj(g.user)
+        if User.authenticate(user.username, form.password.data):
+            user.username = form.username.data
+            user.email = form.email.data
+            user.image_url = form.image_url.data or "/static/images/default-pic.png"
+            user.header_image_url = form.header_image_url.data or "/static/images/warbler-hero.jpg"
+            user.bio = form.bio.data
 
-        db.session.commit()
+            db.session.commit()
+            return redirect(f"/users/{user.id}")
 
-        flash('user successfully updated', 'success')
-        return redirect(f'users/{g.user.id}')
+        flash("Wrong password, please try again.", 'danger')
 
-    else: 
-        flash('unable to update, change template to login? redirect?', 'danger')
-        return render_template('users/detail.html', user=g.user)
-                                                    # users/detail.html
-    # * END POST REQUEST VIEW FUNCTION
+    return render_template('users/edit.html', form=form, user_id=user.id)
 
 
 @app.route('/users/delete', methods=["POST"])
@@ -340,19 +331,17 @@ def homepage():
 
     if g.user:
         # messages, user and following users only using queries
+        followed_ids = [u.id for u in g.user.following] + [g.user.id]
         msgs = (Message
               .query
-              .filter(Message.user_id.in_([u.id for u in g.user.following]))
+              .filter(Message.user_id.in_(followed_ids))
               .order_by(Message.timestamp.desc())
-            #?.join(Message.user_id == g.user.id)
               .limit(100)
               .all()
               )
-        #? this adds user messages, but is not as clean
-        for message in g.user.messages:
-            msgs.append(message)
+        liked_msg_ids = [msg.id for msg in g.user.likes]
 
-        return render_template('home.html', msgs=msgs)
+        return render_template('home.html', msgs=msgs, likes=liked_msg_ids)
 
     else:
         return render_template('home-anon.html')
