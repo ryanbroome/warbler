@@ -7,6 +7,7 @@
 
 import os
 from unittest import TestCase
+from sqlalchemy import exc
 
 from models import db, User, Message, Follows
 
@@ -34,11 +35,20 @@ class UserModelTestCase(TestCase):
 
     def setUp(self):
         """Create test client, add sample data."""
+        db.drop_all()
+        db.create_all()
+        
+        # User.query.delete()
+        # Message.query.delete()
+        # Follows.query.delete()
+        u1 = User.signup("test1", "email1@email.com", "password", None)
+        uid1 = 1111
+        u1.id = uid1
 
-        User.query.delete()
-        Message.query.delete()
-        Follows.query.delete()
-
+        u2 = User.signup("test2", "email2@email.com", "password", None)
+        uid2 = 2222
+        u2.id = uid2
+        
         self.client = app.test_client()
 
     def test_user_model(self):
