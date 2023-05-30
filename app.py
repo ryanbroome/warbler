@@ -25,7 +25,7 @@ app.config['SQLALCHEMY_ECHO'] = False
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', SECRET)
 
-toolbar = DebugToolbarExtension(app)
+# toolbar = DebugToolbarExtension(app)
 
 API_BASE_URL = "http://www.mapquestapi.com/geocoding/v1"
 
@@ -258,7 +258,7 @@ def edit_profile():
 def show_likes(user_id):
     """route to display all liked messages by curr user"""
     if not g.user:
-        flash("Access password restricted", "danger")
+        flash("Access unauthorized", "danger")
         return redirect("/")
     
     user = User.query.get_or_404(user_id)
@@ -268,7 +268,7 @@ def show_likes(user_id):
 def add_like(message_id):
     """Toggle a liked message for the currently-logged in user"""
     if not g.user:
-        flash("Access password Restricted", "danger")
+        flash("Access ", "danger")
         return redirect('/')
     
     liked_message = Message.query.get_or_404(message_id)
@@ -313,7 +313,7 @@ def messages_add():
     """
 
     if not g.user:
-        flash("Access unauthorized.", "danger")
+        flash("Access unauthorized", "danger")
         return redirect("/")
 
     form = MessageForm()
@@ -341,7 +341,7 @@ def messages_destroy(message_id):
     """Delete a message."""
 
     if not g.user:
-        flash("Access unauthorized.", "danger")
+        flash("Access unauthorized", "danger")
         return redirect("/")
     
     msg = Message.query.get(message_id)
@@ -354,10 +354,8 @@ def messages_destroy(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
-
 ##############################################################################
 # Homepage and error pages
-
 
 @app.route('/')
 def homepage():
